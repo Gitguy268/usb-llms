@@ -502,6 +502,9 @@ func webCmd(d *drive.Drive, args []string, appWindow bool) error {
 }
 
 func browserPaths() []string {
+	if p := os.Getenv("USB_LLMS_BROWSER"); p != "" {
+		return []string{p}
+	}
 	switch runtime.GOOS {
 	case "darwin":
 		var out []string

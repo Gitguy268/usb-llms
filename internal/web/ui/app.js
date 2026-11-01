@@ -263,6 +263,9 @@ $("input").addEventListener("keydown", (e) => {
 $("new-chat").onclick = newChat;
 $("show-models").onclick = () => show("models");
 $("menu").onclick = () => $("rail").classList.toggle("open");
+document.querySelector("main").addEventListener("click", (e) => {
+  if (!e.target.closest("#menu")) $("rail").classList.remove("open");
+});
 $("model").onchange = () => { try { localStorage.setItem("model", $("model").value); } catch {} };
 $("add").addEventListener("submit", (e) => {
   e.preventDefault();

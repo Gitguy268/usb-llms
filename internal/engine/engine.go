@@ -158,6 +158,14 @@ func Ensure(d *drive.Drive) (State, error) {
 		}
 		select {
 		case err := <-exited:
+			// Another command may have started the engine a moment earlier.
+			if s, ok := Running(d); ok {
+				return s, nil
+			}
+			time.Sleep(time.Second)
+			if s, ok := Running(d); ok {
+				return s, nil
+			}
 			return State{}, fmt.Errorf("the engine stopped during startup (%v). Last log lines:\n%s", err, tail(logPath))
 		case <-time.After(200 * time.Millisecond):
 		}
