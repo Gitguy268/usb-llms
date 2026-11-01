@@ -1,0 +1,9 @@
+/bin/
+/dist/
+/engine/
+/models/
+/data/
+*.part
+.DS_Store
+._*
+.env

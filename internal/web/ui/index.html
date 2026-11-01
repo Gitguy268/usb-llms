@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USB LLMS</title>
+<meta name="description" content="Chat with AI models that run from this drive.">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<aside class="rail" id="rail">
+  <div class="brand">
+    <svg class="contacts" viewBox="0 0 28 20" aria-hidden="true"><rect x="1" y="1" width="26" height="18" rx="2"/><rect x="6" y="5" width="5" height="5"/><rect x="17" y="5" width="5" height="5"/></svg>
+    <h1>USB LLMS</h1>
+  </div>
+  <nav>
+    <button id="new-chat" class="primary">New chat</button>
+    <button id="show-models">Models</button>
+  </nav>
+  <div class="chats" id="chats" aria-label="Saved chats"></div>
+  <div class="drive">
+    <div class="bar" id="bar" role="img" aria-label="Drive space"></div>
+    <p id="drive-text"></p>
+    <p id="engine-text"></p>
+  </div>
+</aside>
+
+<main>
+  <header>
+    <button id="menu" class="menu" aria-label="Show chats">☰</button>
+    <label class="picker">Model <select id="model"></select></label>
+    <button class="switch" id="mode" role="switch" aria-checked="false" title="Offline blocks every connection outside this computer">
+      <span class="slot"><span class="knob"></span></span>
+      <span id="mode-text">Offline</span>
+    </button>
+  </header>
+
+  <section id="chat-view" class="view">
+    <div class="messages" id="messages" aria-live="polite"></div>
+    <form id="composer">
+      <textarea id="input" rows="1" placeholder="Message" aria-label="Message"></textarea>
+      <button id="send" class="primary">Send</button>
+    </form>
+  </section>
+
+  <section id="models-view" class="view" hidden>
+    <div class="sheet">
+      <h2>On this drive</h2>
+      <table id="installed"></table>
+      <h2>Add a model</h2>
+      <form id="add">
+        <input id="spec" placeholder="hf:owner/repo:Q4_K_M, gh:owner/repo, a link to a .gguf, or a file path" aria-label="Model to add" spellcheck="false">
+        <button class="primary">Add</button>
+      </form>
+      <p class="progress" id="progress" hidden><progress id="progress-bar"></progress><span id="progress-text"></span></p>
+      <h2>Suggested models</h2>
+      <table id="catalog"></table>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
