@@ -1,0 +1,26 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+      - run: sh scripts/build.sh
+      - name: Drive-ready zip
+        run: |
+          mkdir -p "dist/USB LLMS"
+          cp -r bin start.command start.sh start.bat README.md LICENSE NOTICE.md "dist/USB LLMS/"
+          cd dist && zip -qr "usb-llms-${GITHUB_REF_NAME}.zip" "USB LLMS"
+      - run: gh release create "$GITHUB_REF_NAME" "dist/usb-llms-${GITHUB_REF_NAME}.zip" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
