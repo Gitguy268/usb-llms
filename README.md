@@ -49,6 +49,8 @@ USB LLMS/
   data/                                  settings, chats, logs and engine state
 ```
 
+Stop the engine before you eject the stick. The terminal interface, `web`, `app`, `webui` and `lvw` stop an engine they started when you quit them. After `usb-llms run`, `pull`, `start` or similar commands, run `usb-llms stop`.
+
 The program finds the folder from its own location, so the drive letter or mount point doesn't matter. Pass `--home DIR` to use another folder.
 
 </details>
@@ -168,7 +170,7 @@ usb-llms lvw install /path/to/lvw       # copies the program onto the drive (abo
 usb-llms lvw run "Summarize this folder"
 ```
 
-Its settings stay in `data/lvw` on the drive, and the engine address updates itself if the port changes. Offline mode applies to it too. Models without tool support, such as SmolLM2, can chat but can't use its tools.
+Its settings stay in `data/lvw` on the drive, and the engine address updates itself if the port changes. Offline mode applies to it too. Models without tool support, such as SmolLM2, can chat but can't use its tools. For agent work, use a tool-capable model of 3B or larger, because tiny ones call tools badly.
 
 ## Limits
 
@@ -176,11 +178,12 @@ What has and hasn't been tested, as of version 0.1.0:
 
 | Tested for real | How |
 |---|---|
-| macOS on Apple silicon | a simulated exFAT disk image: engine setup, model pulls from Hugging Face, GitHub and the Ollama library, chat on the GPU |
+| macOS on Apple silicon | a simulated exFAT disk image: engine setup, chat on the GPU |
+| Downloads | live pulls from Hugging Face and the Ollama library, and from GitHub repo files. GitHub release assets were tested against a mock only |
 | Offline mode | replies with outside network blocked by the OS, refused pulls, and no files left in the host's home or temp folders |
 | Web, app window and terminal interfaces | a browser test, a headless window lifecycle test and a pseudo-terminal test, each with a real model reply |
-| Open WebUI | a full install on exFAT (3.5 GB), a first start offline, and a chat through it |
-| LvW-harness | run from the drive, with a real reply and a real tool call |
+| Open WebUI | a full install on exFAT (3.5 GB), a clean first start with outside network blocked, its page loading in a browser, and a chat through it |
+| LvW-harness | run from the drive with a real reply. A tool call reached the harness and came back, but the 0.5B test model sent empty arguments, so useful tool work with a small local model is unproven |
 
 | Not tested | Note |
 |---|---|

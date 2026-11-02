@@ -141,6 +141,10 @@ func run(args []string) error {
 }
 
 func runTUI(d *drive.Drive) error {
+	// An engine left running would hold the drive open and block ejecting it.
+	if _, wasRunning := engine.Running(d); !wasRunning {
+		defer func() { _ = engine.Stop(d) }()
+	}
 	action, err := tui.Run(d)
 	if err != nil {
 		return err
@@ -653,6 +657,9 @@ func lvwCmd(d *drive.Drive, args []string) error {
 	bin, err := lvw.Find(d)
 	if err != nil {
 		return err
+	}
+	if _, wasRunning := engine.Running(d); !wasRunning {
+		defer func() { _ = engine.Stop(d) }()
 	}
 	st, err := engine.Ensure(d)
 	if err != nil {

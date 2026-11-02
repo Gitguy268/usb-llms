@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Drives the terminal interface through a pseudo-terminal: test/tui_pty.py /path/to/usb-llms"""
-import os, pty, re, select, struct, fcntl, termios, sys, time
+import os, pty, re, select, struct, fcntl, subprocess, termios, sys, time
 
 ANSI = re.compile(r"\x1b(\[[0-9;?<>=]*[a-zA-Z~]|\][^\x07\x1b]*(\x07|\x1b\\)|[()][A-Z0-9]|[=>])")
 pid, fd = pty.fork()
@@ -74,5 +74,8 @@ reply = seen.replace("\n", " ").strip()
 assert len(reply) > 30, f"no reply on screen: {reply!r}"
 print("reply tail:", reply[-120:])
 key("\x03")
-pump(4)
+pump(8)
+drive = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[1])))
+left = subprocess.run(["pgrep", "-f", os.path.join(drive, "engine")], capture_output=True, text=True).stdout.strip()
+assert not left, f"the engine is still running after quit: {left}"
 print("tui test passed")
