@@ -1,12 +1,12 @@
 module github.com/Gitguy268/usb-llms
 
-go 1.24.2
+go 1.25
 
 require (
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/klauspost/compress v1.19.2
+	github.com/klauspost/compress v1.20.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 )
 
