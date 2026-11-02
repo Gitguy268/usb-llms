@@ -16,6 +16,33 @@ USB LLMS is one small program plus a folder. Put the folder on a stick, and the 
 
 It replaces two deprecated projects, [USB-Uncensored-LLM](https://github.com/techjarves/USB-Uncensored-LLM) and [Portable-AI-USB](https://github.com/techjarves/Portable-AI-USB), with a single tool written from scratch. See [NOTICE](NOTICE.md).
 
+<!-- run-steps:start -->
+## Run it locally, step by step
+
+1. **Install [Go](https://go.dev/dl/) 1.24** or newer.
+
+2. **Get the code:**
+
+   ```sh
+   git clone https://github.com/Gitguy268/usb-llms.git
+   cd usb-llms
+   ```
+
+3. **Build it:**
+
+   ```sh
+   go build -o usb-llms .
+   ```
+
+4. **Set it up while online,** with a small first model:
+
+   ```sh
+   ./usb-llms --home ./drive setup --lean --model smollm2-135m
+   ```
+
+5. **Open the menu:** double-click `start.command` on macOS or `start.bat` on Windows, or run `sh start.sh` on Linux.
+<!-- run-steps:end -->
+
 ## Start
 
 1. Format the stick as **exFAT**, so all three systems can use it. Plan for at least 16 GB.
