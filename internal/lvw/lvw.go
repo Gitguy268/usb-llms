@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Gitguy268/usb-llms/internal/drive"
+	"github.com/Gitguy268/usb-llms/internal/engine"
 )
 
 const deadProxy = "http://127.0.0.1:9"
@@ -105,6 +106,7 @@ func Sync(d *drive.Drive, engineURL, model string) error {
 		}
 	}
 	cfg["ollamaUrl"] = engineURL
+	cfg["ollamaCtx"] = engine.ContextLength
 	if cur, _ := cfg["model"].(string); cur == "" && model != "" {
 		cfg["model"] = "ollama:" + model
 	}

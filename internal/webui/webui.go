@@ -51,6 +51,7 @@ func uvEnv(base []string, d *drive.Drive) []string {
 	return append(base,
 		"UV_PYTHON_INSTALL_DIR="+filepath.Join(platformDir(d), "python"),
 		"UV_CACHE_DIR="+filepath.Join(d.WebUI(), "uv-cache"),
+		"UV_PYTHON_BIN_DIR="+filepath.Join(platformDir(d), "python-bin"),
 		"UV_LINK_MODE=copy",
 		"UV_PYTHON_PREFERENCE=only-managed",
 		"TMPDIR="+d.Tmp(), "TEMP="+d.Tmp(), "TMP="+d.Tmp(),
@@ -232,6 +233,18 @@ func Secret(d *drive.Drive) (string, error) {
 	return s, os.WriteFile(path, []byte(s), 0o600)
 }
 
+// seedVectorDB creates Chroma's database before Open WebUI opens it. exFAT gives a file a new
+// ID when its first byte is written, and SQLite then refuses to write, taking the file for
+// moved ("attempt to write a readonly database"). A file that already has data keeps its ID.
+func seedVectorDB(ctx context.Context, d *drive.Drive) error {
+	db := filepath.Join(d.WebUI(), "data", "vector_db", "chroma.sqlite3")
+	if st, err := os.Stat(db); err == nil && st.Size() > 0 {
+		return nil
+	}
+	script := "import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute('create table seed(a)'); c.execute('drop table seed'); c.commit(); c.close()"
+	return exec.CommandContext(ctx, venvBin(d, "python"), "-I", "-c", script, db).Run()
+}
+
 // Command prepares `open-webui serve` on localhost.
 func Command(ctx context.Context, d *drive.Drive, engineURL string, online bool) (*exec.Cmd, error) {
 	if !Installed(d) {
@@ -241,10 +254,13 @@ func Command(ctx context.Context, d *drive.Drive, engineURL string, online bool)
 	if err != nil {
 		return nil, err
 	}
-	for _, dir := range []string{filepath.Join(d.WebUI(), "data"), filepath.Join(d.WebUI(), "home")} {
+	for _, dir := range []string{filepath.Join(d.WebUI(), "data", "vector_db"), filepath.Join(d.WebUI(), "home")} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return nil, err
 		}
+	}
+	if err := seedVectorDB(ctx, d); err != nil {
+		return nil, fmt.Errorf("couldn't prepare Open WebUI's database: %w", err)
 	}
 	cmd := exec.CommandContext(ctx, venvBin(d, "open-webui"), "serve", "--host", "127.0.0.1", "--port", fmt.Sprint(Port))
 	cmd.Env = Env(os.Environ(), d, engineURL, secret, online)

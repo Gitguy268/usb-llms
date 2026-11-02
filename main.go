@@ -61,7 +61,8 @@ The engine:
   usb-llms start | stop | status
 
 Other interfaces:
-  usb-llms webui install|start Open WebUI, installed onto this drive (about 4 GB)
+  usb-llms webui install|start [--no-open]
+                               Open WebUI, installed onto this drive (about 4 GB)
   usb-llms lvw install [PATH]  copy an LvW-harness binary onto this drive
   usb-llms lvw [ARGS]          run LvW-harness against this drive
 
@@ -572,9 +573,13 @@ func openBrowser(url string) {
 }
 
 func webuiCmd(d *drive.Drive, args []string) error {
-	sub := "start"
-	if len(args) > 0 {
-		sub = args[0]
+	sub, open := "start", true
+	for _, a := range args {
+		if a == "--no-open" {
+			open = false
+		} else {
+			sub = a
+		}
 	}
 	ctx, cancel := interrupted()
 	defer cancel()
@@ -587,9 +592,13 @@ func webuiCmd(d *drive.Drive, args []string) error {
 		fmt.Println("Done. Start it with: usb-llms webui start")
 		return nil
 	case "start":
+		_, wasRunning := engine.Running(d)
 		st, err := engine.Ensure(d)
 		if err != nil {
 			return err
+		}
+		if !wasRunning {
+			defer func() { _ = engine.Stop(d) }()
 		}
 		cmd, err := webui.Command(ctx, d, st.URL(), st.Online)
 		if err != nil {
@@ -602,7 +611,7 @@ func webuiCmd(d *drive.Drive, args []string) error {
 		url := fmt.Sprintf("http://127.0.0.1:%d/", webui.Port)
 		fmt.Println("Open WebUI is starting at", url, "(the first start can take minutes from a USB drive). Press Ctrl+C to stop.")
 		go func() {
-			if waitFor(ctx, url, 10*time.Minute) {
+			if waitFor(ctx, url, 10*time.Minute) && open {
 				openBrowser(url)
 			}
 		}()

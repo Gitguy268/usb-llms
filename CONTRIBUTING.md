@@ -19,7 +19,7 @@ These need a real engine and model in the drive folder.
 
 | Script | What it covers | Run it with |
 |---|---|---|
-| `test/usb-image.sh` | everything on a simulated exFAT drive, macOS only | `sh test/usb-image.sh` |
+| `test/usb-image.sh` | everything on a simulated exFAT drive, macOS only | `sh test/usb-image.sh /path/to/small.gguf` |
 | `test/e2e.mjs` | the web interface in a browser | see the comment at the top of the file |
 | `test/tui_pty.py` | the terminal interface | `python3 test/tui_pty.py /path/to/usb-llms` |
 

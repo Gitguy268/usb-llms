@@ -22,6 +22,9 @@ import (
 // DefaultPort stays clear of a system Ollama on 11434.
 const DefaultPort = 11435
 
+// ContextLength gives agents room for their tools on any machine; Ollama's own default can be 4096.
+const ContextLength = 8192
+
 // deadProxy makes the engine's own outbound requests fail while offline.
 const deadProxy = "http://127.0.0.1:9"
 
@@ -55,6 +58,7 @@ func Env(base []string, d *drive.Drive, port int, online bool) []string {
 		"OLLAMA_HOST=127.0.0.1:"+strconv.Itoa(port),
 		"OLLAMA_MODELS="+d.Models(),
 		"OLLAMA_NOHISTORY=1",
+		"OLLAMA_CONTEXT_LENGTH="+strconv.Itoa(ContextLength),
 		"HOME="+home,
 		"USERPROFILE="+home,
 		"APPDATA="+filepath.Join(home, "AppData"),
