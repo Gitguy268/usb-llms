@@ -20,6 +20,13 @@ It replaces two deprecated projects, [USB-Uncensored-LLM](https://github.com/tec
 **Project page:** [gitguy268.github.io/usb-llms](https://gitguy268.github.io/usb-llms/) · [usb-llms.vercel.app](https://usb-llms.vercel.app)
 <!-- /live-links -->
 
+## Install with Homebrew
+
+```sh
+brew trust gitguy268/tap
+brew install gitguy268/tap/usb-llms
+```
+
 <!-- run-steps:start -->
 ## Run it locally, step by step
 
