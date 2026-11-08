@@ -54,9 +54,11 @@ function renderText(node, text) {
   });
 }
 
-function addMessage(role, text) {
+function addMessage(role, text, files) {
   const m = el("div", { className: "msg " + role });
   renderText(m, text);
+  if (files?.length && typeof attachedEl === "function") m.append(attachedEl(files));
+  if (role === "assistant" && typeof speakButton === "function") m.append(speakButton(() => m.dataset.text || text));
   $("messages").append(m);
   $("messages").scrollTop = $("messages").scrollHeight;
   return m;
@@ -77,8 +79,10 @@ function showEmpty() {
 function show(view) {
   $("chat-view").hidden = view !== "chat";
   $("models-view").hidden = view !== "models";
+  $("create-view").hidden = view !== "create";
   $("rail").classList.remove("open");
   if (view === "models") renderModels();
+  else if (view === "create") renderCreate();
   else $("input").focus();
 }
 
@@ -144,7 +148,7 @@ async function openChat(id) {
   const c = await api(`chats/${id}`);
   state.chatId = id;
   $("messages").replaceChildren();
-  c.messages.forEach((m) => addMessage(m.role === "user" ? "user" : "assistant", m.content));
+  c.messages.forEach((m) => addMessage(m.role === "user" ? "user" : "assistant", m.content, (m.files || []).map((f) => ({ url: `media/uploads/${encodeURIComponent(f)}`, mime: /\.wav$/.test(f) ? "audio/wav" : "image/*" }))));
   if ([...$("model").options].some((o) => o.value === c.model)) $("model").value = c.model;
   show("chat");
   refreshChats();
@@ -159,21 +163,25 @@ function newChat() {
 
 async function send() {
   const content = $("input").value.trim();
-  if (!content || !$("model").value) return;
+  const attachments = takeAttachments();
+  if ((!content && !attachments.length) || !$("model").value) return;
   if ($("messages").querySelector(".empty")) $("messages").replaceChildren();
   $("input").value = "";
   sizeInput();
-  addMessage("user", content);
+  addMessage("user", content, attachments.map((a) => ({ url: `data:${a.mime};base64,${a.data}`, mime: a.mime })));
   const reply = addMessage("assistant", "");
   const ctl = (state.sending = new AbortController());
   $("send").textContent = "Stop";
   let text = "";
   try {
-    await stream("chat", { id: state.chatId, model: $("model").value, content }, (ev) => {
+    await stream("chat", { id: state.chatId, model: $("model").value, content, attachments }, (ev) => {
       if (ev.id) { state.chatId = ev.id; refreshChats(); }
+      if (ev.note) addMessage("note", ev.note);
       if (ev.delta) {
         text += ev.delta;
+        reply.dataset.text = text;
         renderText(reply, text);
+        reply.append(speakButton(() => reply.dataset.text));
         $("messages").scrollTop = $("messages").scrollHeight;
       }
       if (ev.error) throw new Error(ev.error);

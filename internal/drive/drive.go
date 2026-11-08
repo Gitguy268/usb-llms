@@ -60,6 +60,15 @@ func (d *Drive) LvwHome() string    { return filepath.Join(d.Data(), "lvw") }
 func (d *Drive) WebUI() string      { return filepath.Join(d.Data(), "webui") }
 func (d *Drive) ConfigPath() string { return filepath.Join(d.Data(), "config.json") }
 
+// MediaModels holds image, video, 3D and music weights, which work on every platform.
+func (d *Drive) MediaModels() string { return filepath.Join(d.Root, "media") }
+
+// MediaOut holds what the media engines made, plus files attached in chat (uploads/).
+func (d *Drive) MediaOut() string { return filepath.Join(d.Data(), "media") }
+
+// Sidecars holds the Python engines for 3D and music: shared weights and per-platform envs.
+func (d *Drive) Sidecars() string { return filepath.Join(d.Data(), "sidecar") }
+
 // Remote is an OpenAI-compatible service used in online mode. Only the name of the key's
 // environment variable is stored, so a lost drive can't leak the key.
 type Remote struct {
@@ -73,6 +82,18 @@ type Config struct {
 	// Mode is "online", "offline", or empty: offline once a model exists, online until then.
 	Mode    string   `json:"mode,omitempty"`
 	Remotes []Remote `json:"remotes,omitempty"`
+	Media   Media    `json:"media,omitzero"`
+}
+
+// Media holds media choices: the catalogue id to use per kind, and an optional remote
+// (one of Remotes) with the model names to use there for kinds not set up on the drive.
+type Media struct {
+	Defaults   map[string]string `json:"defaults,omitempty"`
+	API        string            `json:"api,omitempty"`
+	Image      string            `json:"image,omitempty"`
+	Speech     string            `json:"speech,omitempty"`
+	Voice      string            `json:"voice,omitempty"`
+	Transcribe string            `json:"transcribe,omitempty"`
 }
 
 // LoadConfig returns defaults when no file exists yet.

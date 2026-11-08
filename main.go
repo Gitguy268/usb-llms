@@ -49,6 +49,12 @@ Models:
   usb-llms run|list|ps|show|rm|cp|create ...
                                the same commands as Ollama, run against this drive
 
+Media (images, video, speech, transcripts, 3D, music):
+  usb-llms media ls|install|pull|rm|use|out|stop|api
+                               engines and models for each kind (usb-llms media help)
+  usb-llms make image|video|speech|music|3d "PROMPT" [--image FILE] [-o FILE]
+  usb-llms transcribe AUDIO-FILE
+
 Modes:
   usb-llms mode [online|offline]
                                show or change the mode. Offline blocks all outside connections
@@ -136,6 +142,12 @@ func run(args []string) error {
 		return webuiCmd(d, args)
 	case "lvw":
 		return lvwCmd(d, args)
+	case "media":
+		return mediaCmd(d, args)
+	case "make":
+		return makeCmd(d, args)
+	case "transcribe":
+		return transcribeCmd(d, args)
 	}
 	return fmt.Errorf("unknown command %q; run usb-llms help", cmd)
 }

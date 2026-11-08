@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "z-image-turbo",
+      "kinds": [
+        "image"
+      ],
+      "engine": "sdcpp",
+      "name": "Z-Image-Turbo (Q3_K)",
+      "licence": "Apache-2.0",
+      "sizeGB": 6.0,
+      "ramGB": 8,
+      "default": true,
+      "note": "Sharp photos and readable text in 8 steps.",
+      "components": {
+        "diffusion-model": "hf:leejet/Z-Image-Turbo-GGUF/z_image_turbo-Q3_K.gguf",
+        "vae": "hf:Comfy-Org/Z-Image-Turbo/split_files/vae/ae.safetensors",
+        "llm": "hf:unsloth/Qwen3-4B-Instruct-2507-GGUF/Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+      },
+      "args": [
+        "--offload-to-cpu"
+      ],
+      "defaults": {
+        "steps": 8,
+        "cfg": 1.0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "sd15",
+      "kinds": [
+        "image"
+      ],
+      "engine": "sdcpp",
+      "name": "Stable Diffusion 1.5 (Q4_0)",
+      "licence": "CreativeML-OpenRAIL-M",
+      "sizeGB": 1.6,
+      "ramGB": 3,
+      "note": "Small and quick on a GPU; older quality. On Macs it runs on the CPU (sd.cpp Metal renders SD 1.x blank).",
+      "components": {
+        "model": "hf:second-state/stable-diffusion-v1-5-GGUF/stable-diffusion-v1-5-pruned-emaonly-Q4_0.gguf"
+      },
+      "defaults": {
+        "steps": 20,
+        "cfg": 7.0,
+        "width": 512,
+        "height": 512,
+        "sampler": "euler_a"
+      },
+      "platformArgs": {
+        "darwin": [
+          "--backend",
+          "diffusion=cpu"
+        ]
+      }
+    },
+    {
+      "id": "wan2.1-t2v-1.3b",
+      "kinds": [
+        "video"
+      ],
+      "engine": "sdcpp",
+      "name": "Wan 2.1 text-to-video 1.3B",
+      "licence": "Apache-2.0",
+      "sizeGB": 6.0,
+      "ramGB": 10,
+      "default": true,
+      "note": "Short 480p clips. Slow without a GPU.",
+      "components": {
+        "diffusion-model": "hf:Comfy-Org/Wan-2.1/split_files/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors",
+        "vae": "hf:Comfy-Org/Wan-2.1/split_files/vae/wan_2.1_vae.safetensors",
+        "t5xxl": "hf:city96/umt5-xxl-encoder-gguf/umt5-xxl-encoder-Q3_K_S.gguf"
+      },
+      "args": [
+        "--offload-to-cpu",
+        "--vae-tiling"
+      ],
+      "defaults": {
+        "steps": 20,
+        "cfg": 6.0,
+        "width": 480,
+        "height": 320,
+        "frames": 17,
+        "fps": 16,
+        "flowShift": 3.0,
+        "sampler": "euler"
+      }
+    },
+    {
+      "id": "lfm3-audio",
+      "kinds": [
+        "speech",
+        "transcribe"
+      ],
+      "engine": "ollama",
+      "ollama": "lfm3-audio",
+      "name": "LFM3 Audio",
+      "licence": "LFM-Open-1.0",
+      "sizeGB": 1.7,
+      "ramGB": 3,
+      "default": true,
+      "note": "Speech recognition, translation and text-to-speech in 18 languages. Needs Ollama 0.40.13+."
+    },
+    {
+      "id": "phonon",
+      "kinds": [
+        "speech"
+      ],
+      "engine": "ollama",
+      "ollama": "phonon",
+      "name": "Phonon (English voices)",
+      "licence": "Apache-2.0 / CC-BY-NC-4.0 voices",
+      "sizeGB": 0.12,
+      "ramGB": 1,
+      "note": "Tiny English text-to-speech. Apple silicon only; some voices are non-commercial."
+    },
+    {
+      "id": "lfm3-omni",
+      "kinds": [
+        "listen"
+      ],
+      "engine": "ollama",
+      "ollama": "lfm3-omni",
+      "name": "LFM3 Omni",
+      "licence": "LFM-Open-1.0",
+      "sizeGB": 2.0,
+      "ramGB": 4,
+      "default": true,
+      "note": "A chat model that takes text, images and audio."
+    },
+    {
+      "id": "triposr",
+      "kinds": [
+        "3d"
+      ],
+      "engine": "triposr",
+      "name": "TripoSR",
+      "licence": "MIT",
+      "sizeGB": 1.7,
+      "ramGB": 6,
+      "default": true,
+      "note": "One picture to a textured mesh (GLB) in seconds. Text-to-3D makes the picture first."
+    },
+    {
+      "id": "ace-step-1.5",
+      "kinds": [
+        "music"
+      ],
+      "engine": "acestep",
+      "name": "ACE-Step 1.5 (2B turbo)",
+      "licence": "MIT",
+      "sizeGB": 9.0,
+      "ramGB": 8,
+      "default": true,
+      "note": "Songs with or without lyrics, instrumentals and short sound beds."
+    }
+  ]
+}

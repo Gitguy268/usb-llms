@@ -220,3 +220,12 @@ func Stop(d *drive.Drive) error {
 	_ = p.Kill()
 	return os.Remove(statePath(d))
 }
+
+// Detach starts cmd in its own session so it outlives the command that started it.
+func Detach(cmd *exec.Cmd) { detach(cmd) }
+
+// Terminate asks a process to stop.
+func Terminate(p *os.Process) error { return terminate(p) }
+
+// FreePort returns the first free localhost port from start.
+func FreePort(start int) (int, error) { return freePort(start) }

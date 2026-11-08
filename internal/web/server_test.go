@@ -108,7 +108,7 @@ func TestLANRequiresToken(t *testing.T) {
 }
 
 func TestPageHasNoOutsideReferences(t *testing.T) {
-	for _, name := range []string{"index.html", "style.css", "app.js"} {
+	for _, name := range []string{"index.html", "style.css", "app.js", "media.js"} {
 		raw, err := uiFiles.ReadFile("ui/" + name)
 		if err != nil {
 			t.Fatal(err)

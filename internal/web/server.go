@@ -66,6 +66,12 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/chats/{id}", s.getChat)
 	mux.HandleFunc("DELETE /api/chats/{id}", s.deleteChat)
 	mux.HandleFunc("POST /api/chat", s.chat)
+	mux.HandleFunc("GET /api/media", s.mediaStatus)
+	mux.HandleFunc("POST /api/media/make", s.mediaMake)
+	mux.HandleFunc("POST /api/media/pull", s.mediaPull)
+	mux.HandleFunc("DELETE /api/media/models", s.mediaRemoveModel)
+	mux.HandleFunc("DELETE /api/media/out", s.mediaRemoveOut)
+	mux.HandleFunc("GET /media/{rel...}", s.mediaFile)
 	return s.guard(mux)
 }
 
@@ -95,7 +101,7 @@ func (s *Server) guard(next http.Handler) http.Handler {
 			http.Error(w, "open the link printed in the terminal, which carries the access token", http.StatusUnauthorized)
 			return
 		}
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; frame-ancestors 'none'")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		next.ServeHTTP(w, r)
@@ -270,15 +276,16 @@ func (s *Server) deleteChat(w http.ResponseWriter, r *http.Request) {
 // chat appends the user's message, streams the reply and saves it, including a reply cut short by Stop.
 func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		ID      string `json:"id"`
-		Model   string `json:"model"`
-		Content string `json:"content"`
+		ID          string       `json:"id"`
+		Model       string       `json:"model"`
+		Content     string       `json:"content"`
+		Attachments []attachment `json:"attachments"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 64<<20)).Decode(&in); err != nil {
 		fail(w, http.StatusBadRequest, err)
 		return
 	}
-	if in.Model == "" || strings.TrimSpace(in.Content) == "" {
+	if in.Model == "" || (strings.TrimSpace(in.Content) == "" && len(in.Attachments) == 0) {
 		fail(w, http.StatusBadRequest, errors.New("choose a model and type a message"))
 		return
 	}
@@ -296,13 +303,21 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	conv.Model = in.Model
-	conv.Messages = append(conv.Messages, chat.Message{Role: "user", Content: in.Content})
+	msg, notes, err := s.attach(r.Context(), st.URL(), in.Model, in.Content, in.Attachments)
+	if err != nil {
+		fail(w, http.StatusBadRequest, err)
+		return
+	}
+	conv.Messages = append(conv.Messages, msg)
 	if err := chat.Save(s.Drive, &conv); err != nil {
 		fail(w, http.StatusInternalServerError, err)
 		return
 	}
 	stream := newLines(w)
 	stream.send(map[string]string{"id": conv.ID, "title": conv.Title})
+	for _, n := range notes {
+		stream.send(map[string]string{"note": n})
+	}
 	var reply strings.Builder
 	err = chat.Stream(r.Context(), s.Drive, st.URL(), in.Model, conv.Messages, func(delta string) {
 		reply.WriteString(delta)

@@ -267,3 +267,8 @@ func Command(ctx context.Context, d *drive.Drive, engineURL string, online bool)
 	cmd.Dir = filepath.Join(d.WebUI(), "home")
 	return cmd, nil
 }
+
+// FindUV returns uv on the drive for this machine, downloading and checking it once.
+func FindUV(ctx context.Context, d *drive.Drive, client *http.Client) (string, error) {
+	return findUV(ctx, d, client)
+}
