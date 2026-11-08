@@ -162,6 +162,8 @@ func runTUI(d *drive.Drive) error {
 		return err
 	}
 	switch action {
+	case tui.ActionCreate:
+		return createPrompt(d, os.Stdin)
 	case tui.ActionWeb:
 		return webCmd(d, nil, false)
 	case tui.ActionApp:

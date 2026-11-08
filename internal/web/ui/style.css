@@ -37,6 +37,7 @@ button { cursor: pointer; }
 .contacts rect { fill: none; stroke: var(--gold); stroke-width: 1.6; }
 .contacts rect + rect { fill: var(--gold); stroke: none; }
 nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+nav #new-chat { grid-column: 1 / -1; }
 nav button { border: 1px solid #2f6d57; background: transparent; color: var(--silk); border-radius: 4px; padding: 7px 8px; }
 nav button:hover { background: var(--mask-deep); }
 nav button.primary { background: var(--gold); border-color: var(--gold); color: #1f1a05; }

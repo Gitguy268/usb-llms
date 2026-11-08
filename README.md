@@ -4,7 +4,7 @@
 
 Run AI models from a USB stick on macOS, Windows and Linux, with or without the internet.
 
-[Start](#start) · [Interfaces](#interfaces) · [Models](#models) · [Offline and online](#offline-and-online) · [LvW-harness](#lvw-harness) · [Limits](#limits)
+[Start](#start) · [Interfaces](#interfaces) · [Models](#models) · [Media](#media) · [Offline and online](#offline-and-online) · [LvW-harness](#lvw-harness) · [Limits](#limits)
 
 ![Licence: MIT](https://img.shields.io/badge/licence-MIT-blue) ![Go 1.24+](https://img.shields.io/badge/go-1.24%2B-00add8) ![Engine: Ollama 0.40.13](https://img.shields.io/badge/engine-Ollama%200.40.13-555) ![macOS, Linux, Windows](https://img.shields.io/badge/runs%20on-macOS%20%7C%20Linux%20%7C%20Windows-555)
 
@@ -12,7 +12,7 @@ Run AI models from a USB stick on macOS, Windows and Linux, with or without the 
 
 </div>
 
-USB LLMS is one small program plus a folder. Put the folder on a stick, and the same models and chats work on every computer you plug it into. Nothing is installed on the computer, and your own Ollama keeps running undisturbed.
+USB LLMS is one small program plus a folder. Put the folder on a stick, and the same models and chats work on every computer you plug it into. It also makes pictures, short videos, speech, music and 3D models from the stick, and the chat takes pictures and voice notes. Nothing is installed on the computer, and your own Ollama keeps running undisturbed.
 
 It replaces two deprecated projects, [USB-Uncensored-LLM](https://github.com/techjarves/USB-Uncensored-LLM) and [Portable-AI-USB](https://github.com/techjarves/Portable-AI-USB), with a single tool written from scratch. See [NOTICE](NOTICE.md).
 
@@ -83,8 +83,11 @@ USB LLMS/
   start.command  start.sh  start.bat     pick the right program for this computer
   bin/                                   usb-llms for each system
   engine/<system>/                       Ollama, added per system on demand
-  models/                                every model, shared by all systems
+  models/                                every chat and audio model, shared by all systems
+  media/                                 image and video weights, shared by all systems
   data/                                  settings, chats, logs and engine state
+  data/media/                            what you made, and files attached in chat
+  data/sidecar/                          the 3D and music engines: shared weights, a Python env per system
 ```
 
 Stop the engine before you eject the stick. The terminal interface, `web`, `app`, `webui` and `lvw` stop an engine they started when you quit them. After `usb-llms run`, `pull`, `start` or similar commands, run `usb-llms stop`.
@@ -112,7 +115,7 @@ Linux and macOS engines are unpacked while they download, so the archive never l
 | Interface | Command | What you get |
 |---|---|---|
 | **Terminal** | `usb-llms` | menus for chat, models, mode and everything below |
-| **Web** | `usb-llms web` | chat, saved chats and a model manager in your browser. Works with no internet |
+| **Web** | `usb-llms web` | chat with pictures and voice notes, saved chats, a Create page and a model manager in your browser. Works with no internet |
 | **App window** | `usb-llms app` | the same page in its own window, like Ollama's desktop app |
 | **Ollama commands** | `usb-llms run`, `list`, `ps`, `show`, `rm`, `cp`, `create` | the real Ollama commands, run against this drive |
 | **Ollama API** | `usb-llms serve` | Ollama's API on `127.0.0.1:11435`, for any tool that speaks it |
@@ -179,6 +182,47 @@ Models labelled uncensored have had safety refusals removed, and can produce har
 
 </details>
 
+## Media
+
+Each kind has a small default model that lives on the drive next to the chat models. Set a kind up once while online, and it works offline on every computer of the same kind afterwards.
+
+```sh
+usb-llms media install speech          # LFM3 Audio (1.7 GB) in the drive's engine
+usb-llms make speech "Dinner is ready." --voice female-american-english
+usb-llms transcribe meeting.wav
+usb-llms media install image           # stable-diffusion.cpp plus Z-Image-Turbo (6 GB)
+usb-llms make image "a lighthouse on a rocky coast, watercolor"
+usb-llms make 3d "a small toy robot"   # draws it first, then builds a GLB mesh
+usb-llms media ls
+```
+
+| Kind | Engine on the drive | Default model | Licence |
+|---|---|---|---|
+| Image (text to image, picture editing) | [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) `sd-server`, added per system | Z-Image-Turbo Q3_K (6 GB). SD 1.5 (1.6 GB) is a smaller option | Apache-2.0 |
+| Video (text to video, picture to video) | the same `sd-server` | Wan 2.1 T2V 1.3B (6 GB) | Apache-2.0 |
+| Speech and transcription | the drive's Ollama | `lfm3-audio` (1.7 GB, 18 languages). `phonon` is a tiny English voice for Apple silicon | LFM Open 1.0 |
+| Pictures and voice notes in chat | the drive's Ollama | any model that sees or hears, such as `lfm3-omni` | the model's own |
+| 3D (picture to 3D, text to 3D) | [TripoSR](https://github.com/VAST-AI-Research/TripoSR) in a Python env made with uv | TripoSR (1.7 GB) | MIT |
+| Music and sound | [ACE-Step 1.5](https://github.com/ace-step/ACE-Step-1.5) in a Python env made with uv | ACE-Step 1.5 2B turbo (about 9 GB) | MIT |
+
+- **Chat** takes pictures and voice notes: attach, paste, drop or record them. A model that hears gets the audio itself. For any other model, the audio is transcribed first. Attached files are kept in `data/media/uploads`, and the saved chat only refers to them.
+- **Create page** in the web interface: pick a kind, write a prompt or add a file, watch the steps and a live preview, and keep everything in a gallery. 3D models open in a viewer you can turn. Replies in chat have a 🔊 button that reads them aloud.
+- **The terminal menu** has a Create entry that asks what to make, step by step.
+- Results go to `data/media/<date>/`, each with a `.json` beside it holding the prompt, model, seed and settings.
+- In online mode, a remote can stand in for kinds the drive can't make: `usb-llms remote add openai https://api.openai.com/v1 OPENAI_API_KEY`, then `usb-llms media api openai image=gpt-image-1 speech=tts-1 voice=alloy transcribe=whisper-1`. Offline mode never uses it.
+
+<details>
+<summary>Where each kind runs</summary>
+
+| | macOS arm64 | macOS x64 | Linux x64 | Linux arm64 | Windows x64 | Windows arm64 |
+|---|---|---|---|---|---|---|
+| Image and video | yes | yes | yes (CPU, or `USB_LLMS_SD_VARIANT=vulkan`) | remote only | yes (CPU, or `vulkan` / `cuda12`) | remote only |
+| Speech, transcription, voice notes | yes | yes | yes | yes | yes | yes |
+| 3D and music | yes (Apple GPU) | no (no PyTorch builds) | yes | yes | yes | no |
+
+Engines start on demand: `sd-server` on port 11438, 3D on 11439, music on 11440. `usb-llms media stop` stops them, and the terminal, web and app interfaces stop the chat engine as before. Image and video weights are shared by every system; the 3D and music engines need one install per system (a few GB each, because of PyTorch).
+</details>
+
 ## Offline and online
 
 ```sh
@@ -238,6 +282,10 @@ Other limits:
 - **LvW-harness browser tools** use the host's temp folder, because browsers can't keep a profile on exFAT.
 - **Split GGUF files** aren't supported from GitHub or direct links. Pick a single-file version.
 - **GitLab specs** aren't supported, unlike in LvW-harness. Use the file's direct link.
+- **Media generation is slow without a GPU.** A 512×512 SD 1.5 picture takes about 4 minutes on a Mac's CPU. The pinned stable-diffusion.cpp renders SD 1.x models blank on Apple GPUs, so SD 1.5 runs on the CPU there.
+- **Media tested for real on macOS (Apple silicon, an APFS folder, not the exFAT image)**: speech, transcription and a voice note in chat through the drive's engine, SD 1.5 images and TripoSR picture-to-3D. Video, music, Z-Image and the remote fallback are unit-tested only.
+- **3D** works on one object on a plain background. Landscapes and busy scenes give an error.
+- **Transcription** reads WAV files; other formats need ffmpeg on the computer.
 - **Unsigned programs.** macOS or Windows may warn the first time. `start.command` clears the macOS download flag for this folder.
 
 ## Build

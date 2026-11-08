@@ -19,6 +19,12 @@ USB LLMS is MIT licensed (see [LICENSE](LICENSE)). It builds on the work below. 
 | xo/terminfo | MIT | terminal interface dependency |
 | golang.org/x/sys | BSD-3-Clause | system calls |
 
+## Bundled in the web interface
+
+| Software | Licence | Where |
+|---|---|---|
+| [@google/model-viewer](https://github.com/google/model-viewer) 4.4.0 (UMD build, includes [three.js](https://github.com/mrdoob/three.js), MIT, and [fflate](https://github.com/101arrowz/fflate), MIT) | Apache-2.0 | `internal/web/ui/vendor/model-viewer.min.js`, licence text beside it; loaded only when a 3D result is shown. Its optional decoder URLs are blocked by the page's CSP |
+
 ## Downloaded at run time (not part of this repository)
 
 | Software | Licence | When |
@@ -28,6 +34,12 @@ USB LLMS is MIT licensed (see [LICENSE](LICENSE)). It builds on the work below. 
 | [uv](https://github.com/astral-sh/uv) | MIT or Apache-2.0 | `usb-llms webui install` |
 | Python | PSF-2.0 | `usb-llms webui install` |
 | [LvW-harness](https://github.com/Gitguy268/LvW-harness) | MIT | `usb-llms lvw install`, when you choose to add it |
+| [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) `sd-server` (release `master-1058-7bcd4ce`) | MIT | `usb-llms media install image` or `video`; checked against the sha256 digest GitHub publishes |
+| [TripoSR](https://github.com/VAST-AI-Research/TripoSR) source (commit `107cefd`) and weights `stabilityai/TripoSR` | MIT | `usb-llms media install 3d`. Run by our own `internal/media/media3d.py`, which swaps its compiled `torchmcubes` for PyMCubes |
+| [PyTorch](https://pytorch.org), [transformers](https://github.com/huggingface/transformers), [trimesh](https://github.com/mikedh/trimesh), [PyMCubes](https://github.com/pmneila/PyMCubes) | BSD-3-Clause, Apache-2.0, MIT, BSD-3-Clause | the 3D engine's Python env |
+| [rembg](https://github.com/danielgatis/rembg) and its U²-Net weights | MIT, Apache-2.0 | the 3D engine's Python env, for background removal |
+| [ACE-Step 1.5](https://github.com/ace-step/ACE-Step-1.5) code (tag `v0.1.8`) and weights | MIT | `usb-llms media install music`, with its own `uv sync` |
+| Media models (Z-Image-Turbo, Qwen3-4B text encoder, FLUX VAE via Comfy-Org, SD 1.5 GGUF, Wan 2.1 1.3B, UMT5-XXL GGUF, LFM3 Audio/Omni, Phonon) | Apache-2.0; SD 1.5: CreativeML OpenRAIL-M; LFM models: LFM Open License 1.0; Phonon voices: partly CC BY-NC 4.0 | `usb-llms media pull`; each licence is shown in `usb-llms media ls` |
 | Models | each model's own licence, shown in the catalogue | when you add one |
 
 Two catalogue models carry terms beyond open-source licences: Llama (Meta's community licence) and Gemma (Google's terms). NemoMix Unleashed states no licence on its model page. You're responsible for following each model's terms.

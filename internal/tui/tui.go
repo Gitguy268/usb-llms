@@ -29,6 +29,8 @@ const (
 	ActionApp   Action = "app"
 	ActionWebUI Action = "webui"
 	ActionLvw   Action = "lvw"
+	// ActionCreate asks what to make in the plain terminal: pictures, speech, 3D and more.
+	ActionCreate Action = "create"
 )
 
 var (
@@ -150,6 +152,7 @@ func (m *model) homeItems() []item {
 			m.screen, m.cursor = scrPick, 0
 			return nil
 		}},
+		item{"Create a picture, video, speech, music or 3D model", func(m *model) tea.Cmd { m.action = ActionCreate; return tea.Quit }},
 		item{"Models on this drive", func(m *model) tea.Cmd { m.screen, m.cursor = scrModels, 0; return m.loadList() }},
 		item{"Add a model", func(m *model) tea.Cmd { m.screen, m.cursor = scrCatalog, 0; return nil }},
 		item{mode, func(m *model) tea.Cmd { return m.toggleMode() }},

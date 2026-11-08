@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
@@ -333,4 +334,46 @@ func transcribeCmd(d *drive.Drive, args []string) error {
 		req.Translate = true
 	}
 	return runMake(d, req, *v["o"])
+}
+
+// createPrompt asks what to make, one question at a time, for people who started the menu.
+func createPrompt(d *drive.Drive, in io.Reader) error {
+	r := bufio.NewReader(in)
+	ask := func(q string) string {
+		fmt.Print(q)
+		line, _ := r.ReadString('\n')
+		return strings.TrimSpace(line)
+	}
+	kinds := []string{"image", "video", "speech", "music", "3d", "transcribe"}
+	fmt.Println("What do you want to make?")
+	for i, k := range kinds {
+		fmt.Printf("  %d. %s\n", i+1, k)
+	}
+	n := atoi(ask("Number: "))
+	if n < 1 || n > len(kinds) {
+		return errors.New("no choice made")
+	}
+	req := media.Request{Kind: kinds[n-1]}
+	switch req.Kind {
+	case "transcribe":
+		path := ask("Audio file: ")
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		req.Audio = raw
+	case "3d":
+		if p := ask("Picture of the object (leave empty to describe it instead): "); p != "" {
+			raw, err := os.ReadFile(p)
+			if err != nil {
+				return err
+			}
+			req.Image = raw
+		} else {
+			req.Prompt = ask("Describe the object: ")
+		}
+	default:
+		req.Prompt = ask("Describe it: ")
+	}
+	return runMake(d, req, ask("Save a copy as (leave empty to keep it in data/media only): "))
 }
