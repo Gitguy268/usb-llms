@@ -402,7 +402,7 @@ func placeLink(dest, name, target string) error {
 	if _, err := os.Stat(resolved); err != nil {
 		return err
 	}
-	if err := os.Symlink(target, p); err == nil {
+	if err := os.Symlink(filepath.FromSlash(target), p); err == nil {
 		return nil
 	}
 	src, err := os.Open(resolved)

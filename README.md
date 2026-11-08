@@ -283,7 +283,7 @@ Other limits:
 - **Split GGUF files** aren't supported from GitHub or direct links. Pick a single-file version.
 - **GitLab specs** aren't supported, unlike in LvW-harness. Use the file's direct link.
 - **Media generation is slow without a GPU.** A 512×512 SD 1.5 picture takes about 4 minutes on a Mac's CPU. The pinned stable-diffusion.cpp renders SD 1.x models blank on Apple GPUs, so SD 1.5 runs on the CPU there.
-- **Media tested for real on macOS (Apple silicon, an APFS folder, not the exFAT image)**: speech, transcription and a voice note in chat through the drive's engine, SD 1.5 images and TripoSR picture-to-3D. Video, music, Z-Image and the remote fallback are unit-tested only.
+- **Media tested for real on macOS (Apple silicon, an APFS folder, not the exFAT image)**: speech, transcription and a voice note in chat through the drive's engine, SD 1.5 images and TripoSR picture-to-3D. Never run for real: Wan video, ACE-Step music, Z-Image and the remote fallback with a real key. The remote fallback has unit tests against a fake server; video only has a unit test of its request, and music has none.
 - **3D** works on one object on a plain background. Landscapes and busy scenes give an error.
 - **Transcription** reads WAV files; other formats need ffmpeg on the computer.
 - **Unsigned programs.** macOS or Windows may warn the first time. `start.command` clears the macOS download flag for this folder.

@@ -152,9 +152,9 @@ func (m *model) homeItems() []item {
 			m.screen, m.cursor = scrPick, 0
 			return nil
 		}},
-		item{"Create a picture, video, speech, music or 3D model", func(m *model) tea.Cmd { m.action = ActionCreate; return tea.Quit }},
 		item{"Models on this drive", func(m *model) tea.Cmd { m.screen, m.cursor = scrModels, 0; return m.loadList() }},
 		item{"Add a model", func(m *model) tea.Cmd { m.screen, m.cursor = scrCatalog, 0; return nil }},
+		item{"Create a picture, video, speech, music or 3D model", func(m *model) tea.Cmd { m.action = ActionCreate; return tea.Quit }},
 		item{mode, func(m *model) tea.Cmd { return m.toggleMode() }},
 		item{"Open the web interface", func(m *model) tea.Cmd { m.action = ActionWeb; return tea.Quit }},
 		item{"Open the app window", func(m *model) tea.Cmd { m.action = ActionApp; return tea.Quit }},
