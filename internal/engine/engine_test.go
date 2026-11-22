@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -200,7 +201,7 @@ func TestInstallLeanAndLinks(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(d.Engine(), "lib", "cuda_v12")); err == nil {
 		t.Error("lean should leave out GPU libraries")
 	}
-	if !strings.Contains(os.Getenv("GOOS"), "windows") {
+	if runtime.GOOS != "windows" {
 		if _, err := os.Stat(filepath.Join(d.Engine(), "lib", "libggml.0.dylib")); err == nil {
 			raw, err := os.ReadFile(filepath.Join(d.Engine(), "lib", "chain.dylib"))
 			if err != nil || string(raw) != "real" {
