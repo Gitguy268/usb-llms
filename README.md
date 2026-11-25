@@ -103,18 +103,20 @@ Linux and macOS engines are unpacked as they download, so the archive never land
 
 <table>
 <tr>
-<td><img src="docs/images/chat.webp" alt="Chat in the web interface, with the Offline switch at the top right"></td>
+<td><img src="docs/images/chat.webp" alt="Chat in the web interface: each message under the name of who wrote it, and the offline switch with its status light at the top right"></td>
 <td><img src="docs/images/models.webp" alt="Models page with installed models and suggested models"></td>
 <td width="170"><img src="docs/images/phone.webp" alt="The web interface on a phone-sized screen"></td>
 </tr>
 </table>
 
 ```
-USB LLMS  offline  darwin-arm64
+ U S B  L L M S   ● offline   darwin-arm64
+▮▮▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯  2.1 GB in models, 24.0 GB free
 
 > Chat
   Models on this drive
   Add a model
+  Create a picture, video, speech, music or 3D model
   Switch to online
   Open the web interface
   Open the app window
