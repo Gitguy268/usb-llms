@@ -324,7 +324,7 @@ func (s *Server) chat(w http.ResponseWriter, r *http.Request) {
 		stream.send(map[string]string{"delta": delta})
 	})
 	if reply.Len() > 0 {
-		conv.Messages = append(conv.Messages, chat.Message{Role: "assistant", Content: reply.String()})
+		conv.Messages = append(conv.Messages, chat.Message{Role: "assistant", Content: reply.String(), Model: in.Model})
 		_ = chat.Save(s.Drive, &conv)
 	}
 	if err != nil && !errors.Is(err, context.Canceled) {

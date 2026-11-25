@@ -29,6 +29,8 @@ type Message struct {
 	Role    string   `json:"role"`
 	Content string   `json:"content"`
 	Files   []string `json:"files,omitempty"`
+	// Model is the model that wrote an assistant reply. Chats saved before it was added leave it empty.
+	Model string `json:"model,omitempty"`
 }
 
 // UploadsDir holds files attached in chat.

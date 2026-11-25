@@ -54,8 +54,11 @@ function renderText(node, text) {
   });
 }
 
-function addMessage(role, text, files) {
+function addMessage(role, text, files, who) {
   const m = el("div", { className: "msg " + role });
+  // The name line above each message: "you", or the model that wrote the reply.
+  if (role === "user") m.dataset.who = "you";
+  if (role === "assistant") m.dataset.who = who || "reply";
   renderText(m, text);
   if (files?.length && typeof attachedEl === "function") m.append(attachedEl(files));
   if (role === "assistant" && typeof speakButton === "function") m.append(speakButton(() => m.dataset.text || text));
@@ -99,7 +102,10 @@ function renderBar() {
   if (!s) return;
   const used = state.installed.reduce((n, m) => n + m.size, 0);
   const total = used + s.freeBytes || 1;
-  $("bar").replaceChildren(...state.installed.map((m) => el("i", { title: `${m.name}, ${gb(m.size)}`, style: `width:${(m.size / total) * 100}%` })));
+  // A row of cells like a drive gauge: each lit cell is about 1/24 of the space models and free room share.
+  const lit = used ? Math.max(1, Math.round((used / total) * 24)) : 0;
+  $("bar").replaceChildren(...Array.from({ length: 24 }, (_, i) => el("i", { className: i < lit ? "on" : "" })));
+  $("bar").title = state.installed.map((m) => `${m.name}, ${gb(m.size)}`).join("\n");
   $("drive-text").textContent = `${gb(used)} in models, ${gb(s.freeBytes)} free`;
 }
 
@@ -148,7 +154,7 @@ async function openChat(id) {
   const c = await api(`chats/${id}`);
   state.chatId = id;
   $("messages").replaceChildren();
-  c.messages.forEach((m) => addMessage(m.role === "user" ? "user" : "assistant", m.content, (m.files || []).map((f) => ({ url: `media/uploads/${encodeURIComponent(f)}`, mime: /\.wav$/.test(f) ? "audio/wav" : "image/*" }))));
+  c.messages.forEach((m) => addMessage(m.role === "user" ? "user" : "assistant", m.content, (m.files || []).map((f) => ({ url: `media/uploads/${encodeURIComponent(f)}`, mime: /\.wav$/.test(f) ? "audio/wav" : "image/*" })), m.model));
   if ([...$("model").options].some((o) => o.value === c.model)) $("model").value = c.model;
   show("chat");
   refreshChats();
@@ -169,7 +175,7 @@ async function send() {
   $("input").value = "";
   sizeInput();
   addMessage("user", content, attachments.map((a) => ({ url: `data:${a.mime};base64,${a.data}`, mime: a.mime })));
-  const reply = addMessage("assistant", "");
+  const reply = addMessage("assistant", "", null, $("model").value);
   const ctl = (state.sending = new AbortController());
   $("send").textContent = "Stop";
   let text = "";

@@ -34,9 +34,12 @@ const (
 )
 
 var (
-	title  = lipgloss.NewStyle().Foreground(lipgloss.Color("#d6ae3f")).Bold(true)
-	dim    = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#55675e", Dark: "#93a89d"})
-	active = lipgloss.NewStyle().Foreground(lipgloss.Color("#d6ae3f"))
+	// The name sits on a strip of yellow label-maker tape, as on the drive itself.
+	title  = lipgloss.NewStyle().Background(lipgloss.Color("#f2cc1d")).Foreground(lipgloss.Color("#17140a")).Bold(true).Padding(0, 1)
+	dim    = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#59636d", Dark: "#98a3ad"})
+	active = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#8a6d00", Dark: "#f2cc1d"}).Bold(true)
+	ledOn  = lipgloss.NewStyle().Foreground(lipgloss.Color("#3fb950"))
+	ledOff = lipgloss.NewStyle().Foreground(lipgloss.Color("#e3a008"))
 	errSt  = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#a4322a", Dark: "#e8877e"})
 	you    = lipgloss.NewStyle().Bold(true)
 )
@@ -253,7 +256,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case doneMsg:
 		m.busy = false
 		if m.reply != "" {
-			m.conv.Messages = append(m.conv.Messages, chat.Message{Role: "assistant", Content: m.reply})
+			m.conv.Messages = append(m.conv.Messages, chat.Message{Role: "assistant", Content: m.reply, Model: m.conv.Model})
 			m.reply = ""
 		}
 		if err := chat.Save(m.d, &m.conv); err != nil && msg.err == nil {
@@ -421,11 +424,12 @@ func (m model) keyChat(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	var b strings.Builder
-	mode := "offline"
+	led := ledOff.Render("●") + " offline"
 	if m.d.Online() {
-		mode = "online"
+		led = ledOn.Render("●") + " online"
 	}
-	b.WriteString(title.Render("USB LLMS") + dim.Render("  "+mode+"  "+drive.Platform()) + "\n\n")
+	b.WriteString(title.Render("U S B  L L M S") + "  " + led + dim.Render("   "+drive.Platform()) + "\n")
+	b.WriteString(m.gauge() + "\n\n")
 	switch m.screen {
 	case scrHome:
 		for i, it := range m.homeItems() {
@@ -478,9 +482,23 @@ func (m model) View() string {
 
 func row(on bool, text string) string {
 	if on {
-		return active.Render("> ") + text
+		return active.Render("> " + text)
 	}
 	return "  " + text
+}
+
+// gauge draws the drive as a row of 24 cells: lit for models, dark for free room.
+func (m model) gauge() string {
+	var used uint64
+	for _, x := range m.list {
+		used += uint64(x.Size)
+	}
+	free, _ := sys.FreeBytes(m.d.Root)
+	cells := 0
+	if total := used + free; total > 0 && used > 0 {
+		cells = max(1, int(float64(used)/float64(total)*24+0.5))
+	}
+	return active.Render(strings.Repeat("▮", cells)) + dim.Render(strings.Repeat("▯", 24-cells)) + dim.Render(fmt.Sprintf("  %s in models, %s free", sys.GB(used), sys.GB(free)))
 }
 
 // chatView shows the end of the conversation that fits on screen.

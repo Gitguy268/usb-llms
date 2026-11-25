@@ -58,7 +58,7 @@ function takeAttachments() {
 function renderChips() {
   $("chips").replaceChildren(...pending.map((a, i) =>
     el("span", { className: "chip" },
-      a.mime.startsWith("image/") ? el("img", { src: `data:${a.mime};base64,${a.data}`, alt: "" }) : "🎤",
+      a.mime.startsWith("image/") ? el("img", { src: `data:${a.mime};base64,${a.data}`, alt: "" }) : "audio:",
       a.name,
       el("button", { type: "button", textContent: "×", ariaLabel: `Remove ${a.name}`, onclick: () => { pending.splice(i, 1); renderChips(); } }))));
 }
@@ -78,7 +78,7 @@ function attachedEl(files) {
 }
 
 function speakButton(getText) {
-  const b = el("button", { type: "button", className: "speak", textContent: "🔊", title: "Read this aloud", ariaLabel: "Read this aloud" });
+  const b = el("button", { type: "button", className: "speak", textContent: "Read aloud", title: "Read this aloud", ariaLabel: "Read this aloud" });
   b.onclick = async () => {
     const text = (getText() || "").slice(0, 4000);
     if (!text) return;
@@ -106,18 +106,18 @@ $("record").onclick = async () => {
     if (!recording) {
       recording = await recordMic();
       $("record").classList.add("recording");
-      $("record").textContent = "■";
+      $("record").textContent = "Stop";
     } else {
       const wav = await recording.stop();
       recording = null;
       $("record").classList.remove("recording");
-      $("record").textContent = "🎤";
+      $("record").textContent = "Record";
       pending.push({ name: "voice note", mime: "audio/wav", data: await b64(wav) });
       renderChips();
     }
   } catch (err) {
     recording = null;
-    $("record").textContent = "🎤";
+    $("record").textContent = "Record";
     addMessage("error", err.message);
   }
 };
@@ -198,21 +198,21 @@ $("m-file").onchange = async () => {
 };
 $("m-record").onclick = async () => {
   try {
-    if (!create.rec) { create.rec = await recordMic(); $("m-record").textContent = "■ Stop"; }
+    if (!create.rec) { create.rec = await recordMic(); $("m-record").textContent = "Stop recording"; }
     else {
       create.file = { mime: "audio/wav", data: await b64(await create.rec.stop()) };
       create.rec = null;
-      $("m-record").textContent = "🎤 Record";
+      $("m-record").textContent = "Record";
       showJob({ status: "Recording ready. Press Make." });
     }
-  } catch (err) { create.rec = null; $("m-record").textContent = "🎤 Record"; showJob({ error: err.message }); }
+  } catch (err) { create.rec = null; $("m-record").textContent = "Record"; showJob({ error: err.message }); }
 };
 
 function showJob(j) {
   const box = $("m-job");
   box.hidden = false;
   box.replaceChildren(
-    j.error ? el("p", { className: "warn", textContent: j.error }) : el("p", { textContent: j.status + (j.total ? ` · step ${j.step} of ${j.total}` : "") }),
+    j.error ? el("p", { className: "warn", textContent: j.error }) : el("p", { textContent: j.status + (j.total ? `, step ${j.step} of ${j.total}` : "") }),
     j.total ? Object.assign(el("progress"), { max: j.total, value: j.step || 0 }) : "",
     j.preview ? el("img", { className: "step", src: `data:image/png;base64,${j.preview}`, alt: "preview" }) : "",
     j.output ? mediaEl(j.output) : "",
@@ -261,11 +261,11 @@ async function refreshCreate() {
   const d = create.data;
   $("gallery").replaceChildren(...(d.outputs.length ? d.outputs.map((o) =>
     el("div", { className: "item" }, mediaEl(o), el("div", { className: "row" },
-      el("small", { className: "grow", textContent: `${o.kind} · ${(o.meta?.prompt || o.text || (o.kind === "3d" ? "from a picture" : "")).slice(0, 70)}` }),
+      el("small", { className: "grow", textContent: `${o.kind}: ${(o.meta?.prompt || o.text || (o.kind === "3d" ? "from a picture" : "")).slice(0, 70)}` }),
       el("button", { className: "plain", textContent: "Delete", onclick: async () => { await api(`media/out?rel=${encodeURIComponent(o.rel)}`, { method: "DELETE" }); refreshCreate(); } }))))
     : [el("p", { className: "hint", textContent: "Nothing made yet." })]));
   $("m-catalog").replaceChildren(...d.catalog.map((e) => el("tr", {},
-    el("td", {}, e.name, el("small", { textContent: `${e.kinds.join(", ")} · ${e.note || ""} Licence: ${e.licence}.` })),
+    el("td", {}, e.name, el("small", { textContent: `${e.kinds.join(", ")}: ${e.note || ""} Licence: ${e.licence}.` })),
     el("td", { className: "num", textContent: `${e.sizeGB} GB` }),
     el("td", { className: "act" }, e.ready
       ? el("button", { className: "plain", textContent: "Remove", onclick: async () => { await api(`media/models?id=${encodeURIComponent(e.id)}`, { method: "DELETE" }).catch((err) => showJob({ error: err.message })); refreshCreate(); } })
